@@ -5,6 +5,7 @@ go 1.22
 require (
 	github.com/cretz/bine v0.2.0
 	github.com/gocolly/colly/v2 v2.1.0
+	github.com/joho/godotenv v1.5.1
 )
 
 require (

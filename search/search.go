@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -26,12 +27,13 @@ func SearchDarkWeb(keyword string) {
 		colly.Async(true),
 	)
 
-	if err := c.SetProxy("socks5://127.0.0.1:9050"); err != nil {
+	torProxy := os.Getenv("TOR_PROXY")
+	if err := c.SetProxy(torProxy); err != nil {
 		fmt.Println("Error setting up a proxy:", err)
 		return
 	}
 
-	c.SetRequestTimeout(260 * time.Second)
+	c.SetRequestTimeout(5 * time.Minute)
 
 	c.OnHTML("body", func(e *colly.HTMLElement) {
 		if strings.Contains(strings.ToLower(e.Text), strings.ToLower(keyword)) {

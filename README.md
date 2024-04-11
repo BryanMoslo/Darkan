@@ -5,7 +5,7 @@ Darkan is a Go application that sniffs into libreddit (for now) for a given keyw
 ## Requirements
 
 - Go installed on your machine
-- Tor installed in your machine
+- Tor installed in your machine (via homebrew)
 
 ## Tor Installation
 
@@ -16,9 +16,7 @@ $ brew install tor
 $ export PATH="/opt/homebrew/bin/tor:$PATH"
 ```
 
-**Update:** Now you don't need to open it or establish a connection manually.
-
-**TODO:** Running a remote Tor instance.
+**Update:** Now you don't need to open it or establish a connection manually, however, you still need a Tor instance, it can be local or remote.
 
 ## Usage
 
@@ -34,3 +32,14 @@ $ export PATH="/opt/homebrew/bin/tor:$PATH"
     ```bash
     $ go run main.go --keyword="your_keyword"
 Built as a starting point for exploration and searching of relevant terms on the Dark Web.
+
+## Env Variables
+```bash
+TOR_PROXY=socks5://127.0.0.1:9050 # Local Tor instance
+```
+
+In case you want to use a remote instance, you can set a Tor Relay listed [here](https://metrics.torproject.org/rs.html#toprelays).
+
+```bash
+TOR_PROXY=socks5://[IPv4]:[ORPort]
+```
