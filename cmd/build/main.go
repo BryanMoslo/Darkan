@@ -10,7 +10,7 @@ func main() {
 	cmd.Args = append(
 		cmd.Args,
 
-		// `--ldflags`, `-linkmode=external -extldflags="-static"`,
+		`--ldflags`, `-linkmode=external -extldflags="-static"`,
 		`-tags`, `osusergo,netgo`,
 		`-buildvcs=false`,
 		"-o", "bin/app",

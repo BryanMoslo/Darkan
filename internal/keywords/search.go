@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/cretz/bine/tor"
@@ -13,14 +14,14 @@ import (
 	"github.com/leapkit/core/envor"
 )
 
-// SearchDarkWeb searches for the specified keyword in the Dark Web.
-func (keyword Instance) search() error {
+// search looks for the specified keyword in the Dark Web.
+func (keyword Instance) search() {
 	slog.Info("Starting Tor instance...")
 
 	t, err := tor.Start(context.TODO(), &tor.StartConf{})
 	if err != nil {
 		slog.Info(fmt.Sprintf("failed to start Tor: %s", err.Error()))
-		return fmt.Errorf("failed to start Tor: %v", err)
+		return
 	}
 
 	defer t.Close()
@@ -33,10 +34,16 @@ func (keyword Instance) search() error {
 	torProxy := envor.Get("TOR_PROXY", "socks5://127.0.0.1:9050")
 	if err := c.SetProxy(torProxy); err != nil {
 		slog.Info(fmt.Sprintf("error setting up a proxy: %s", err.Error()))
-		return fmt.Errorf("error setting up a proxy: %v", err)
+		return
 	}
 
 	c.SetRequestTimeout(5 * time.Minute)
+
+	c.Limit(&colly.LimitRule{
+		Parallelism: 2,
+	})
+
+	var wg sync.WaitGroup
 
 	c.OnHTML("body", func(e *colly.HTMLElement) {
 		if strings.Contains(strings.ToLower(e.Text), strings.ToLower(keyword.Value)) {
@@ -54,22 +61,35 @@ func (keyword Instance) search() error {
 			// Storing some info about the research we've done (?)
 			// Keep the keyword as Found = false so once this run again (via CLI/CronJob), it will look for all keywords that have not been found yet (until?: undefined for now)
 		}
+
+		wg.Done()
+	})
+
+	c.OnError(func(_ *colly.Response, err error) {
+		fmt.Println("Something went wrong:", err)
 	})
 
 	// TODO:
 	// Add More sources
 	// Implement an efficient way to perform this search (concurreny?)
 
-	// libreddit
-	onionPage := fmt.Sprintf("http://ecue64yqdxdk3ucrmm2g3irhlvey3wkzcokwi6oodxxwezqk3ak3fhyd.onion/r/popular/search?restrict_sr=on&q=%s", url.QueryEscape(keyword.Value))
-
-	fmt.Printf("Sniffing '%s' around in the dark web... \n", keyword.Value)
-	err = c.Visit(onionPage)
-	if err != nil {
-		return fmt.Errorf("error visiting Onion page: %v", err)
+	// List of URLs to scrape
+	urls := []string{
+		fmt.Sprintf("http://ecue64yqdxdk3ucrmm2g3irhlvey3wkzcokwi6oodxxwezqk3ak3fhyd.onion/r/popular/search?restrict_sr=on&q=%s", url.QueryEscape(keyword.Value)),
 	}
 
-	c.Wait()
+	fmt.Printf("Sniffing '%s' around in the dark web... \n", keyword.Value)
+	for _, u := range urls {
+		wg.Add(1)
 
-	return nil
+		err := c.Visit(u)
+		if err != nil {
+			fmt.Println("Error visiting Onion page:", err)
+			return
+		}
+	}
+
+	wg.Wait()
+
+	c.Wait()
 }
