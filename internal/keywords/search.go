@@ -16,7 +16,7 @@ import (
 )
 
 // search looks for the specified keyword in the Dark Web.
-func (keyword Instance) search() {
+func (keyword Instance) Search() {
 	slog.Info("Starting Tor instance...")
 
 	t, err := tor.Start(context.TODO(), &tor.StartConf{TempDataDirBase: "tor"})
@@ -49,7 +49,7 @@ func (keyword Instance) search() {
 	c.OnHTML("body", func(e *colly.HTMLElement) {
 		content, _ := e.DOM.Html()
 		if keyword.isContained(content) {
-			slog.Info(fmt.Sprintf("Keyword '%s' was found in the following HTML content: \n%s\n", keyword.Value, content))
+			slog.Info(fmt.Sprintf("Keyword '%s' was found.", keyword.Value))
 
 			// TODO:
 			// Save the source's info (URL and Content).
@@ -67,7 +67,7 @@ func (keyword Instance) search() {
 	})
 
 	c.OnError(func(_ *colly.Response, err error) {
-		slog.Error(fmt.Sprintf("something went wrong: %s", err))
+		slog.Info(fmt.Sprintf("something went wrong: %s", err))
 	})
 
 	// TODO:
@@ -79,7 +79,7 @@ func (keyword Instance) search() {
 		fmt.Sprintf("http://ecue64yqdxdk3ucrmm2g3irhlvey3wkzcokwi6oodxxwezqk3ak3fhyd.onion/r/popular/search?restrict_sr=on&q=%s", url.QueryEscape(keyword.Value)),
 	}
 
-	fmt.Printf("Sniffing '%s' around in the dark web... \n", keyword.Value)
+	slog.Info(fmt.Sprintf("Searching for: '%s'...", keyword.Value))
 	for _, u := range urls {
 		wg.Add(1)
 
@@ -91,7 +91,6 @@ func (keyword Instance) search() {
 	}
 
 	wg.Wait()
-
 	c.Wait()
 }
 
