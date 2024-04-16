@@ -48,7 +48,7 @@ func (keyword Instance) search() {
 
 	c.OnHTML("body", func(e *colly.HTMLElement) {
 		content, _ := e.DOM.Html()
-		if contains(content, keyword.Value) {
+		if keyword.isContained(content) {
 			slog.Info(fmt.Sprintf("Keyword '%s' was found in the following HTML content: \n%s\n", keyword.Value, content))
 
 			// TODO:
@@ -95,10 +95,11 @@ func (keyword Instance) search() {
 	c.Wait()
 }
 
-func contains(content, keyword string) bool {
-	keyword = strings.ToLower(keyword)
+// isContained returns true when the given text contains the keyword but not in an URL
+func (keyword Instance) isContained(text string) bool {
+	k := strings.ToLower(keyword.Value)
 
-	doc, err := html.Parse(strings.NewReader(content))
+	doc, err := html.Parse(strings.NewReader(text))
 	if err != nil {
 		fmt.Println("error by trying to parse:", err)
 		return false
@@ -113,7 +114,7 @@ func contains(content, keyword string) bool {
 			_, err := url.ParseRequestURI(data)
 			isURL := err == nil
 
-			if !isURL && strings.Contains(data, keyword) {
+			if !isURL && strings.Contains(data, k) {
 				found = true
 				return
 			}
