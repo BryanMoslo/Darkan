@@ -15,4 +15,5 @@ type Instance struct {
 // for the Keyword model
 type Service interface {
 	Create(keyword *Instance) error
+	All() ([]Instance, error)
 }

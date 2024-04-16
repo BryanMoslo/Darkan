@@ -20,3 +20,9 @@ func (s *service) Create(keyword *Instance) error {
 	_, err := s.db.NamedExec(`INSERT INTO keywords (id, value, callback_url) VALUES (:id, :value, :callback_url)`, keyword)
 	return err
 }
+
+func (s *service) All() ([]Instance, error) {
+	var keywords []Instance
+	err := s.db.Select(&keywords, "SELECT * FROM keywords WHERE found = $1", false)
+	return keywords, err
+}

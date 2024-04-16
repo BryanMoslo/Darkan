@@ -27,7 +27,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Q: Should we trigger a bg search here? (still thinking on it)
-	go keyword.search()
+	go keyword.Search()
 
 	response := response.SuccessResponse(http.StatusCreated, "Keyword registered successfully").WithData(map[string]string{
 		"keyword":      keyword.Value,
