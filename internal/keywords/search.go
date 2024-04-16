@@ -19,9 +19,9 @@ import (
 func (keyword Instance) search() {
 	slog.Info("Starting Tor instance...")
 
-	t, err := tor.Start(context.TODO(), &tor.StartConf{})
+	t, err := tor.Start(context.TODO(), &tor.StartConf{TempDataDirBase: "tor"})
 	if err != nil {
-		slog.Info(fmt.Sprintf("failed to start Tor: %s", err.Error()))
+		slog.Error(fmt.Sprintf("failed to start Tor: %s", err.Error()))
 		return
 	}
 
@@ -34,7 +34,7 @@ func (keyword Instance) search() {
 
 	torProxy := envor.Get("TOR_PROXY", "socks5://127.0.0.1:9050")
 	if err := c.SetProxy(torProxy); err != nil {
-		slog.Info(fmt.Sprintf("error setting up a proxy: %s", err.Error()))
+		slog.Error(fmt.Sprintf("error setting up a proxy: %s", err.Error()))
 		return
 	}
 
@@ -67,7 +67,7 @@ func (keyword Instance) search() {
 	})
 
 	c.OnError(func(_ *colly.Response, err error) {
-		fmt.Println("Something went wrong:", err)
+		slog.Error(fmt.Sprintf("something went wrong: %s", err))
 	})
 
 	// TODO:
@@ -85,7 +85,7 @@ func (keyword Instance) search() {
 
 		err := c.Visit(u)
 		if err != nil {
-			fmt.Println("Error visiting Onion page:", err)
+			slog.Error(fmt.Sprintf("error visiting %s: %s", u, err))
 			return
 		}
 	}
@@ -101,7 +101,7 @@ func (keyword Instance) isContained(text string) bool {
 
 	doc, err := html.Parse(strings.NewReader(text))
 	if err != nil {
-		fmt.Println("error by trying to parse:", err)
+		slog.Error(fmt.Sprintf("error by trying to parse: %s", err))
 		return false
 	}
 

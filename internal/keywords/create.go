@@ -12,7 +12,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	keyword := Instance{}
 	err := json.NewDecoder(r.Body).Decode(&keyword)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response.ErrorResponse(http.StatusBadRequest, err.Error()))
 		return
 	}
 
@@ -21,7 +21,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 
 	err = keywords.Create(&keyword)
 	if err != nil {
-		slog.Info(fmt.Sprintf("Internal server error saving keyword: %s", err.Error()))
+		slog.Error(fmt.Sprintf("Internal server error saving keyword: %s", err.Error()))
 		json.NewEncoder(w).Encode(response.ErrorResponse(http.StatusInternalServerError, "Internal server error saving keyword."))
 		return
 	}
