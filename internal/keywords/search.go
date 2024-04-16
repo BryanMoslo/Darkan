@@ -12,6 +12,7 @@ import (
 	"github.com/cretz/bine/tor"
 	"github.com/gocolly/colly/v2"
 	"github.com/leapkit/core/envor"
+	"golang.org/x/net/html"
 )
 
 // search looks for the specified keyword in the Dark Web.
@@ -46,8 +47,8 @@ func (keyword Instance) search() {
 	var wg sync.WaitGroup
 
 	c.OnHTML("body", func(e *colly.HTMLElement) {
-		if strings.Contains(strings.ToLower(e.Text), strings.ToLower(keyword.Value)) {
-			content, _ := e.DOM.Html()
+		content, _ := e.DOM.Html()
+		if keyword.isContained(content) {
 			slog.Info(fmt.Sprintf("Keyword '%s' was found in the following HTML content: \n%s\n", keyword.Value, content))
 
 			// TODO:
@@ -92,4 +93,36 @@ func (keyword Instance) search() {
 	wg.Wait()
 
 	c.Wait()
+}
+
+// isContained returns true when the given text contains the keyword but not in an URL
+func (keyword Instance) isContained(text string) bool {
+	k := strings.ToLower(keyword.Value)
+
+	doc, err := html.Parse(strings.NewReader(text))
+	if err != nil {
+		fmt.Println("error by trying to parse:", err)
+		return false
+	}
+
+	var found bool
+	var f func(*html.Node)
+	f = func(n *html.Node) {
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			data := strings.ToLower(c.Data)
+
+			_, err := url.ParseRequestURI(data)
+			isURL := err == nil
+
+			if !isURL && strings.Contains(data, k) {
+				found = true
+				return
+			}
+
+			f(c)
+		}
+	}
+
+	f(doc)
+	return found
 }
