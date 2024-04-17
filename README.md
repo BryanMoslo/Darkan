@@ -41,7 +41,7 @@ Root path for the endpoints will be available at http://localhost:3000.
 
 > | name      |  type     | data type               | description                                                           |
 > |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
-> | keyword      |  required | string (JSON)   | Value to search in the Dark Web  |
+> | value      |  required | string (JSON)   | Value to search in the Dark Web  |
 > | callback_url |  required | string (JSON)   | Endpoint URL to be notified once a keyword in found  |
 
 
