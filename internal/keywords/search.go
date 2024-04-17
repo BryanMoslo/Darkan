@@ -16,8 +16,8 @@ import (
 )
 
 // search looks for the specified keyword in the Dark Web.
-func (keyword Instance) Search() {
-	slog.Info("Starting Tor instance...")
+func (keyword Instance) Search(service *service) {
+	slog.Info("starting Tor instance")
 
 	t, err := tor.Start(context.TODO(), &tor.StartConf{TempDataDirBase: "tor"})
 	if err != nil {
@@ -49,14 +49,30 @@ func (keyword Instance) Search() {
 	c.OnHTML("body", func(e *colly.HTMLElement) {
 		content, _ := e.DOM.Html()
 		if keyword.isContained(content) {
-			slog.Info(fmt.Sprintf("Keyword '%s' was found.", keyword.Value))
+			source := e.Request.URL.String()
+			slog.Info(fmt.Sprintf("keyword '%s' was found in source: '%s'", keyword.Value, source))
+
+			match := Match{
+				KeywordID: keyword.ID,
+				Content:   content,
+				Source:    source,
+				FoundAt:   time.Now(),
+			}
+
+			err := service.CreateMatch(&match)
+			if isDuplicateKeyError(err) {
+				slog.Error("match already exists for keyword and source URL")
+				return
+			}
+
+			if err != nil {
+				slog.Error(fmt.Sprintf("failed to create a match for keyword '%s' in source: %s, error: %s", keyword.Value, source, err.Error()))
+			}
 
 			// TODO:
-			// Save the source's info (URL and Content).
-			// Update the Keyword instance to set keyword.Found = true
 			// Make a POST request to the keyword.CallbackURL saying we have found the keyword.
 		} else {
-			slog.Info(fmt.Sprintf("Keyword '%s' was not found. \n", keyword.Value))
+			slog.Info(fmt.Sprintf("keyword '%s' was not found. \n", keyword.Value))
 
 			// TODO:
 			// Storing some info about the research we've done (?)
@@ -72,17 +88,16 @@ func (keyword Instance) Search() {
 
 	// TODO:
 	// Add More sources
-	// Implement an efficient way to perform this search (concurreny?)
 
 	// List of URLs to scrape
 	urls := []string{
-		fmt.Sprintf("http://ecue64yqdxdk3ucrmm2g3irhlvey3wkzcokwi6oodxxwezqk3ak3fhyd.onion/r/popular/search?restrict_sr=on&q=%s", url.QueryEscape(keyword.Value)),
+		// fmt.Sprintf("http://ecue64yqdxdk3ucrmm2g3irhlvey3wkzcokwi6oodxxwezqk3ak3fhyd.onion/r/popular/search?restrict_sr=on&q=%s", url.QueryEscape(keyword.Value)), UNAVAILABLE
 		fmt.Sprintf("https://www.reddittorjg6rue252oqsxryoxengawnmo46qy4kyii5wtqnwfj4ooad.onion/search?q=%s", url.QueryEscape(keyword.Value)),
-		fmt.Sprintf("http://rambleeeqrhty6s5jgefdfdtc6tfgg4jj6svr4jpgk4wjtg3qshwbaad.onion/search?q=%s", url.QueryEscape(keyword.Value)),
+		fmt.Sprintf("http://rambleeeqrhty6s5jgefdfdtc6tfgg4jj6svr4jpgk4wjtg3qshwbaad.onion/search?q=%s", url.QueryEscape(keyword.Value)), // Returns false positive
 		fmt.Sprintf("https://www.bbcnewsd73hkzno2ini43t4gblxvycyac5aw4gnv7t2rccijh7745uqd.onion/search?q=%s", url.QueryEscape(keyword.Value)),
 	}
 
-	slog.Info(fmt.Sprintf("Searching for: '%s'...", keyword.Value))
+	slog.Info(fmt.Sprintf("searching for keyword: '%s'", keyword.Value))
 	for _, u := range urls {
 		wg.Add(1)
 
@@ -95,6 +110,8 @@ func (keyword Instance) Search() {
 
 	wg.Wait()
 	c.Wait()
+
+	slog.Info(fmt.Sprintf("search completed for: '%s'", keyword.Value))
 }
 
 // isContained returns true when the given text contains the keyword but not in an URL

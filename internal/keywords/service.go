@@ -1,6 +1,8 @@
 package keywords
 
 import (
+	"strings"
+
 	"github.com/gofrs/uuid/v5"
 	"github.com/jmoiron/sqlx"
 )
@@ -21,8 +23,21 @@ func (s *service) Create(keyword *Instance) error {
 	return err
 }
 
-func (s *service) All() ([]Instance, error) {
+func (s *service) UnfoundKeywords() ([]Instance, error) {
 	var keywords []Instance
 	err := s.db.Select(&keywords, "SELECT * FROM keywords WHERE found = $1", false)
 	return keywords, err
+}
+
+func (s *service) CreateMatch(match *Match) error {
+	match.ID = uuid.Must(uuid.NewV4())
+	_, err := s.db.NamedExec(`INSERT INTO matches (id, keyword_id, source_url, content, found_at) VALUES (:id, :keyword_id, :source_url, :content, :found_at)`, match)
+	return err
+}
+
+func isDuplicateKeyError(err error) bool {
+	if err == nil {
+		return false
+	}
+	return strings.Contains(err.Error(), "pq: duplicate key value violates unique constraint")
 }
