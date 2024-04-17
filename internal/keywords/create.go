@@ -17,19 +17,24 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	keyword.Found = false
-	keywords := r.Context().Value("keywordService").(*service)
+	keywordService := r.Context().Value("keywordService").(*service)
 
-	err = keywords.Create(&keyword)
-	if err != nil {
+	err = keywordService.Create(&keyword)
+
+	if isDuplicateKeyError(err) {
+		slog.Error("keyword already exists for this keyword_id and source_url")
+	}
+
+	if err != nil && !isDuplicateKeyError(err) {
 		slog.Error(fmt.Sprintf("Internal server error saving keyword: %s", err.Error()))
-		json.NewEncoder(w).Encode(response.ErrorResponse(http.StatusInternalServerError, "Internal server error saving keyword."))
+		json.NewEncoder(w).Encode(response.ErrorResponse(http.StatusInternalServerError, "internal server error saving keyword"))
 		return
 	}
 
 	// Q: Should we trigger a bg search here? (still thinking on it)
-	go keyword.Search()
+	go keyword.Search(keywordService)
 
-	response := response.SuccessResponse(http.StatusCreated, "Keyword registered successfully").WithData(map[string]string{
+	response := response.SuccessResponse(http.StatusCreated, "keyword registered successfully").WithData(map[string]string{
 		"keyword":      keyword.Value,
 		"callback_url": keyword.CallbackURL,
 	})

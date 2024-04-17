@@ -16,23 +16,23 @@ func main() {
 	}
 
 	keywordService := keywords.NewService(conn)
-	keywordsToSearch, err := keywordService.All()
+	keywordsToSearch, err := keywordService.UnfoundKeywords()
 	if err != nil {
 		slog.Error(err.Error())
 		return
 	}
 
-	slog.Info(fmt.Sprintf("%v keyword(s) to search in the dark web.", len(keywordsToSearch)))
+	slog.Info(fmt.Sprintf("%v keyword(s) found to search in the dark web", len(keywordsToSearch)))
 
 	var wg sync.WaitGroup
 	for _, keyword := range keywordsToSearch {
 		wg.Add(1)
 		go func(k keywords.Instance) {
 			defer wg.Done()
-			k.Search()
+			k.Search(keywordService)
 		}(keyword)
 	}
 
 	wg.Wait()
-	slog.Info("All keywords searched.")
+	slog.Info("[done] process completed for all keywords")
 }
