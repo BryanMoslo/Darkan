@@ -68,6 +68,8 @@ func (keyword Instance) Search() {
 
 	c.OnError(func(_ *colly.Response, err error) {
 		slog.Info(fmt.Sprintf("something went wrong: %s", err))
+
+		wg.Done()
 	})
 
 	// TODO:
