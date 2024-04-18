@@ -94,7 +94,7 @@ func (keyword Instance) Search(service *service) {
 	urls := []string{
 		// fmt.Sprintf("http://ecue64yqdxdk3ucrmm2g3irhlvey3wkzcokwi6oodxxwezqk3ak3fhyd.onion/r/popular/search?restrict_sr=on&q=%s", url.QueryEscape(keyword.Value)), UNAVAILABLE
 		fmt.Sprintf("https://www.reddittorjg6rue252oqsxryoxengawnmo46qy4kyii5wtqnwfj4ooad.onion/search?q=%s", url.QueryEscape(keyword.Value)),
-		fmt.Sprintf("http://rambleeeqrhty6s5jgefdfdtc6tfgg4jj6svr4jpgk4wjtg3qshwbaad.onion/search?q=%s", url.QueryEscape(keyword.Value)), // Returns false positive
+		fmt.Sprintf("http://rambleeeqrhty6s5jgefdfdtc6tfgg4jj6svr4jpgk4wjtg3qshwbaad.onion/search?q=%s", url.QueryEscape(keyword.Value)),
 		fmt.Sprintf("https://www.bbcnewsd73hkzno2ini43t4gblxvycyac5aw4gnv7t2rccijh7745uqd.onion/search?q=%s", url.QueryEscape(keyword.Value)),
 	}
 
