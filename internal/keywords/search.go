@@ -1,9 +1,12 @@
 package keywords
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"net/url"
 	"strings"
 	"sync"
@@ -69,8 +72,7 @@ func (keyword Instance) Search(service *service) {
 				slog.Error(fmt.Sprintf("failed to create a match for keyword '%s' in source: %s, error: %s", keyword.Value, source, err.Error()))
 			}
 
-			// TODO:
-			// Make a POST request to the keyword.CallbackURL saying we have found the keyword.
+			keyword.performCallback(source, content)
 		} else {
 			slog.Info(fmt.Sprintf("keyword '%s' was not found. \n", keyword.Value))
 
@@ -112,6 +114,29 @@ func (keyword Instance) Search(service *service) {
 	c.Wait()
 
 	slog.Info(fmt.Sprintf("search completed for: '%s'", keyword.Value))
+}
+
+// performCallback performs the callback to notify that we have the keyword.
+func (keyword Instance) performCallback(source, content string) {
+	requestBody, err := json.Marshal(url.Values{
+		"Keyword": []string{keyword.CallbackURL},
+		"Source":  []string{source},
+		"Content": []string{content},
+	})
+
+	if err != nil {
+		slog.Error(fmt.Sprintf("error: %s", err))
+		return
+	}
+
+	response, err := http.Post(keyword.CallbackURL, "application/json", bytes.NewBuffer(requestBody))
+	if err != nil {
+		slog.Error(fmt.Sprintf("error making request: %s", err))
+		return
+	}
+	defer response.Body.Close()
+
+	slog.Info("performing callback - Response status: " + response.Status)
 }
 
 // isContained returns true when the given text contains the keyword but not in an URL
