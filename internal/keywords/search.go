@@ -15,7 +15,6 @@ import (
 	"github.com/cretz/bine/tor"
 	"github.com/gocolly/colly/v2"
 	"github.com/leapkit/core/envor"
-	"golang.org/x/net/html"
 )
 
 // search looks for the specified keyword in the Dark Web.
@@ -51,7 +50,7 @@ func (keyword Instance) Search(service *service) {
 
 	c.OnHTML("body", func(e *colly.HTMLElement) {
 		content, _ := e.DOM.Html()
-		if keyword.isContained(content) {
+		if keyword.isContained(e) {
 			source := e.Request.URL.String()
 			slog.Info(fmt.Sprintf("keyword '%s' was found in source: '%s'", keyword.Value, source))
 
@@ -139,34 +138,22 @@ func (keyword Instance) performCallback(match Match) {
 	slog.Info("performing callback - Response status: " + response.Status)
 }
 
-// isContained returns true when the given text contains the keyword but not in an URL
-func (keyword Instance) isContained(text string) bool {
+// isContained returns true when the HTML page contains the keyword
+func (keyword Instance) isContained(e *colly.HTMLElement) bool {
+	htmlContent := strings.ToLower(e.Text)
 	k := strings.ToLower(keyword.Value)
 
-	doc, err := html.Parse(strings.NewReader(text))
-	if err != nil {
-		slog.Error(fmt.Sprintf("error by trying to parse: %s", err))
-		return false
+	list := []string{
+		fmt.Sprintf("couldn’t find any results for “%s”", k),
+		fmt.Sprintf("there are no results for %s", k),
+		fmt.Sprintf("no results for %s", k),
 	}
 
-	var found bool
-	var f func(*html.Node)
-	f = func(n *html.Node) {
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			data := strings.ToLower(c.Data)
-
-			_, err := url.ParseRequestURI(data)
-			isURL := err == nil
-
-			if !isURL && strings.Contains(data, k) {
-				found = true
-				return
-			}
-
-			f(c)
+	for _, item := range list {
+		if strings.Contains(htmlContent, item) {
+			return false
 		}
 	}
 
-	f(doc)
-	return found
+	return strings.Contains(htmlContent, k)
 }
