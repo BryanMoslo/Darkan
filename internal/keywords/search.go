@@ -119,7 +119,7 @@ func (keyword Instance) Search(service *service) {
 // performCallback performs the callback to notify that we have the keyword
 func (keyword Instance) performCallback(match Match) {
 	requestBody, err := json.Marshal(url.Values{
-		"Keyword": []string{keyword.CallbackURL},
+		"Keyword": []string{keyword.Value},
 		"Source":  []string{match.Source},
 		"Content": []string{match.Content},
 	})
