@@ -72,7 +72,7 @@ func (keyword Instance) Search(service *service) {
 				slog.Error(fmt.Sprintf("failed to create a match for keyword '%s' in source: %s, error: %s", keyword.Value, source, err.Error()))
 			}
 
-			keyword.performCallback(source, content)
+			keyword.performCallback(match)
 		} else {
 			slog.Info(fmt.Sprintf("keyword '%s' was not found. \n", keyword.Value))
 
@@ -116,12 +116,12 @@ func (keyword Instance) Search(service *service) {
 	slog.Info(fmt.Sprintf("search completed for: '%s'", keyword.Value))
 }
 
-// performCallback performs the callback to notify that we have the keyword.
-func (keyword Instance) performCallback(source, content string) {
+// performCallback performs the callback to notify that we have the keyword
+func (keyword Instance) performCallback(match Match) {
 	requestBody, err := json.Marshal(url.Values{
 		"Keyword": []string{keyword.CallbackURL},
-		"Source":  []string{source},
-		"Content": []string{content},
+		"Source":  []string{match.Source},
+		"Content": []string{match.Content},
 	})
 
 	if err != nil {
