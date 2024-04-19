@@ -23,6 +23,10 @@ func (s *service) Create(keyword *Instance) error {
 	return err
 }
 
+func (s *service) Reload(keyword *Instance) error {
+	return s.db.Get(keyword, "SELECT * FROM keywords WHERE value = $1 AND callback_url = $2 LIMIT 1", keyword.Value, keyword.CallbackURL)
+}
+
 func (s *service) UnfoundKeywords() ([]Instance, error) {
 	var keywords []Instance
 	err := s.db.Select(&keywords, "SELECT * FROM keywords WHERE found = $1", false)
