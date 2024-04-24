@@ -50,6 +50,7 @@ func (keyword Instance) Search(service *service) {
 
 	c.OnHTML("body", func(e *colly.HTMLElement) {
 		content, _ := e.DOM.Html()
+
 		if keyword.isContained(e) {
 			source := e.Request.URL.String()
 			slog.Info(fmt.Sprintf("keyword '%s' was found in source: '%s'", keyword.Value, source))
@@ -87,20 +88,20 @@ func (keyword Instance) Search(service *service) {
 		slog.Info(fmt.Sprintf("something went wrong: %s", err))
 	})
 
-	// TODO:
-	// Add More sources
+	slog.Info(fmt.Sprintf("searching for keyword: '%s'", keyword.Value))
+	keywordValue := url.QueryEscape(keyword.Value)
 
 	// List of URLs to scrape
-	urls := []string{
-		// fmt.Sprintf("http://ecue64yqdxdk3ucrmm2g3irhlvey3wkzcokwi6oodxxwezqk3ak3fhyd.onion/r/popular/search?restrict_sr=on&q=%s", url.QueryEscape(keyword.Value)), UNAVAILABLE
-		fmt.Sprintf("https://www.reddittorjg6rue252oqsxryoxengawnmo46qy4kyii5wtqnwfj4ooad.onion/search?q=%s", url.QueryEscape(keyword.Value)),
-		fmt.Sprintf("http://rambleeeqrhty6s5jgefdfdtc6tfgg4jj6svr4jpgk4wjtg3qshwbaad.onion/search?q=%s", url.QueryEscape(keyword.Value)),
-		fmt.Sprintf("https://www.bbcnewsd73hkzno2ini43t4gblxvycyac5aw4gnv7t2rccijh7745uqd.onion/search?q=%s", url.QueryEscape(keyword.Value)),
+	sources, err := service.SourceList()
+
+	if err != nil {
+		slog.Info("error finding source list: ", err)
 	}
 
-	slog.Info(fmt.Sprintf("searching for keyword: '%s'", keyword.Value))
-	for _, u := range urls {
+	for _, source := range sources {
 		wg.Add(1)
+
+		u := source.URL + keywordValue
 
 		err := c.Visit(u)
 		if err != nil {

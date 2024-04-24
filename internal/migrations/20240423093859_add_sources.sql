@@ -1,0 +1,12 @@
+INSERT INTO sources (url, available, risk_level) VALUES ('https://www.reddittorjg6rue252oqsxryoxengawnmo46qy4kyii5wtqnwfj4ooad.onion/search?q=', true, 1);
+INSERT INTO sources (url, available, risk_level) VALUES ('http://rambleeeqrhty6s5jgefdfdtc6tfgg4jj6svr4jpgk4wjtg3qshwbaad.onion/search?q=', true, 1);
+INSERT INTO sources (url, available, risk_level) VALUES ('https://www.bbcnewsd73hkzno2ini43t4gblxvycyac5aw4gnv7t2rccijh7745uqd.onion/search?q=', true, 1);
+INSERT INTO sources (url, available, risk_level) VALUES ('http://piratebayo3klnzokct3wt5yyxb2vpebbuyjl7m623iaxmqhsd52coid.onion/search.php?q=', true, 3);
+INSERT INTO sources (url, available, risk_level) VALUES ('http://7eoz4h2nvw4zlr7gvlbutinqqpm546f5egswax54az6lt2u7e3t6d7yd.onion/index.php/search?q=', true, 1);
+INSERT INTO sources (url, available, risk_level) VALUES ('http://libraryfyuybp7oyidyya3ah5xvwgyx6weauoini7zyz555litmmumad.onion/s?query=', true, 1);
+INSERT INTO sources (url, available, risk_level) VALUES ('http://bbzzzsvqcrqtki6umym6itiixfhni37ybtt7mkbjyxn2pgllzxf2qgyd.onion/search/1476788/?q=', true, 5);
+INSERT INTO sources (url, available, risk_level) VALUES ('http://2222222kgeqcc33xrcwxbgo4bgdlbdfkns254wmotign2nxzndqws7yd.onion/?s=', true, 2);
+INSERT INTO sources (url, available, risk_level) VALUES ('http://muwgjdckwwmhyi7lj73dspumrxmzuzjvujmtmyrhhbjrgswcakobtfad.onion/?s=', true, 2);
+INSERT INTO sources (url, available, risk_level) VALUES ('http://zaejy2lskzkbxo5vlc3qxs4mpwg25lgoadwtwxquvhkkq5eid43oqryd.onion/?search=', true, 1);
+INSERT INTO sources (url, available, risk_level) VALUES ('http://sdolvtfhatvsysc6l34d65ymdwxcujausv7k5jk4cy5ttzhjoi6fzvyd.onion/search/?query=', true, 1);
+INSERT INTO sources (url, available, risk_level) VALUES ('https://www.nytimesn7cgmftshazwhfgzm37qxb44r64ytbb2dj3x62d2lljsciiyd.onion/search?query=', true, 1);
