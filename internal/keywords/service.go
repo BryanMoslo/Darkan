@@ -36,6 +36,12 @@ func (s *service) CreateMatch(match *Match) error {
 	return err
 }
 
+func (s *service) KeywordMatchList() (keywordMatches KeywordsMatches, err error) {
+	err = s.db.Select(&keywordMatches, "SELECT * FROM matches m INNER JOIN keywords k on k.id = m.keyword_id")
+
+	return keywordMatches, err
+}
+
 func (s *service) SourceList() (sources sources.Sources, err error) {
 	err = s.db.Select(&sources, "SELECT * FROM sources")
 
