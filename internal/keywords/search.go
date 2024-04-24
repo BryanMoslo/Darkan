@@ -71,8 +71,6 @@ func (keyword Instance) Search(service *service) {
 			if err != nil {
 				slog.Error(fmt.Sprintf("failed to create a match for keyword '%s' in source: %s, error: %s", keyword.Value, source, err.Error()))
 			}
-
-			keyword.performCallback(match)
 		} else {
 			slog.Info(fmt.Sprintf("keyword '%s' was not found. \n", keyword.Value))
 
@@ -86,6 +84,8 @@ func (keyword Instance) Search(service *service) {
 
 	c.OnError(func(_ *colly.Response, err error) {
 		slog.Info(fmt.Sprintf("something went wrong: %s", err))
+
+		wg.Done()
 	})
 
 	slog.Info(fmt.Sprintf("searching for keyword: '%s'", keyword.Value))

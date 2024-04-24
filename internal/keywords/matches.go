@@ -16,6 +16,8 @@ type Match struct {
 	FoundAt   time.Time `json:"found_at" db:"found_at"`
 }
 
+type Matches []Match
+
 // MatchService is the interface that wraps the CRUD operations
 // for the Match model
 type MatchService interface {
