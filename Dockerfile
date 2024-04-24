@@ -15,7 +15,8 @@ FROM alpine
 RUN apk add --no-cache tzdata ca-certificates tor
 
 # Set up Tor configuration
-RUN echo "SocksPort 0.0.0.0:9050" >> /etc/tor/torrc
+RUN echo "SocksPort 127.0.0.1:9050" >> /etc/tor/torrc
+RUN echo "User toruser" >> /etc/tor/torrc
 
 WORKDIR /bin/
 
