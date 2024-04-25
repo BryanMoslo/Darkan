@@ -9,6 +9,9 @@ ClientOnly 1
 # Log info file /var/log/tor/info.log
 # Log debug file /var/log/tor/debug.log
 
+# SOCKS proxy configuration
+SocksPort 127.0.0.1:9050 IPv6Traffic PreferIPv6 KeepAliveIsolateSOCKSAuth
+
 # Allow connections from other containers
 SocksListenAddress 127.0.0.1
 
