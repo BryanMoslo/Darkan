@@ -18,14 +18,14 @@ func NewService(db *sqlx.DB) *service {
 	return &service{db: db}
 }
 
-func (s *service) Create(keyword *Instance) error {
+func (s *service) Create(keyword *Keyword) error {
 	keyword.ID = uuid.Must(uuid.NewV4())
 	_, err := s.db.NamedExec(`INSERT INTO keywords (id, value, callback_url) VALUES (:id, :value, :callback_url)`, keyword)
 	return err
 }
 
-func (s *service) UnfoundKeywords() ([]Instance, error) {
-	var keywords []Instance
+func (s *service) UnfoundKeywords() ([]Keyword, error) {
+	var keywords []Keyword
 	err := s.db.Select(&keywords, "SELECT * FROM keywords WHERE found = $1", false)
 	return keywords, err
 }

@@ -27,7 +27,7 @@ func main() {
 	var wg sync.WaitGroup
 	for _, keyword := range keywordsToSearch {
 		wg.Add(1)
-		go func(k keywords.Instance) {
+		go func(k keywords.Keyword) {
 			defer wg.Done()
 			k.Search(keywordService)
 		}(keyword)

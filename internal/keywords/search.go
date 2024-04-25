@@ -1,12 +1,9 @@
 package keywords
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"log/slog"
-	"net/http"
 	"net/url"
 	"strings"
 	"sync"
@@ -18,7 +15,7 @@ import (
 )
 
 // search looks for the specified keyword in the Dark Web.
-func (keyword Instance) Search(service *service) {
+func (keyword Keyword) Search(service *service) {
 	slog.Info("starting Tor instance")
 
 	t, err := tor.Start(context.TODO(), &tor.StartConf{TempDataDirBase: "tor"})
@@ -116,31 +113,8 @@ func (keyword Instance) Search(service *service) {
 	slog.Info(fmt.Sprintf("search completed for: '%s'", keyword.Value))
 }
 
-// performCallback performs the callback to notify that we have the keyword
-func (keyword Instance) performCallback(match Match) {
-	requestBody, err := json.Marshal(url.Values{
-		"Keyword": []string{keyword.Value},
-		"Source":  []string{match.Source},
-		"Content": []string{match.Content},
-	})
-
-	if err != nil {
-		slog.Error(fmt.Sprintf("error: %s", err))
-		return
-	}
-
-	response, err := http.Post(keyword.CallbackURL, "application/json", bytes.NewBuffer(requestBody))
-	if err != nil {
-		slog.Error(fmt.Sprintf("error making request: %s", err))
-		return
-	}
-	defer response.Body.Close()
-
-	slog.Info("performing callback - Response status: " + response.Status)
-}
-
 // isContained returns true when the HTML page contains the keyword
-func (keyword Instance) isContained(e *colly.HTMLElement) bool {
+func (keyword Keyword) isContained(e *colly.HTMLElement) bool {
 	htmlContent := strings.ToLower(e.Text)
 	k := strings.ToLower(keyword.Value)
 

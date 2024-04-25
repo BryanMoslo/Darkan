@@ -9,7 +9,7 @@ import (
 )
 
 func Create(w http.ResponseWriter, r *http.Request) {
-	keyword := Instance{}
+	keyword := Keyword{}
 	err := json.NewDecoder(r.Body).Decode(&keyword)
 	if err != nil {
 		json.NewEncoder(w).Encode(response.ErrorResponse(http.StatusBadRequest, err.Error()))
