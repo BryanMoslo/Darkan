@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -159,18 +158,9 @@ func (keyword Instance) isContained(content string) bool {
 		}
 	}
 
-	ignoreHTMLElements := []string{
-		fmt.Sprintf(`<input[^>]*\svalue="%s"[^>]*>`, k),
-		fmt.Sprintf(`<nav[^>]*>.*%s.*<\/nav>`, k),
-		`search results for\s*“([^”]*)”`,
-		fmt.Sprintf(`results for:.*%s`, k),
-		fmt.Sprintf(`results for\s.*%s`, k),
-		fmt.Sprintf(`result for\s.*%s`, k),
-		fmt.Sprintf(`result for.*%s`, k),
-		fmt.Sprintf(`%s.*did not match`, k),
-	}
-
+	ignoreHTMLElements := ignoredTextElements(k)
 	ignoreCoincidences := 0
+
 	for _, element := range ignoreHTMLElements {
 		re := regexp.MustCompile(element)
 		spot := "[ignore-coincidence]"
@@ -194,7 +184,7 @@ func sanitizeHTML(contentHTML string) string {
 	doc, err := html.Parse(strings.NewReader(cleanedHTML))
 
 	if err != nil {
-		log.Fatal(err)
+		slog.Error(fmt.Sprintf("sanitizeHTML parsing error: %s", err.Error()))
 		return ""
 	}
 
@@ -202,7 +192,7 @@ func sanitizeHTML(contentHTML string) string {
 
 	buf := bytes.NewBuffer([]byte{})
 	if err := html.Render(buf, doc); err != nil {
-		log.Fatal(err)
+		slog.Error(fmt.Sprintf("sanitizeHTML render error: %s", err.Error()))
 		return ""
 	}
 
@@ -219,5 +209,18 @@ func removeScript(n *html.Node) {
 
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		removeScript(c)
+	}
+}
+
+func ignoredTextElements(k string) []string {
+	return []string{
+		fmt.Sprintf(`<input[^>]*\svalue="%s"[^>]*>`, k),
+		fmt.Sprintf(`<nav[^>]*>.*%s.*<\/nav>`, k),
+		`search results for\s*“([^”]*)”`,
+		fmt.Sprintf(`results for:.*%s`, k),
+		fmt.Sprintf(`results for\s.*%s`, k),
+		fmt.Sprintf(`result for\s.*%s`, k),
+		fmt.Sprintf(`result for.*%s`, k),
+		fmt.Sprintf(`%s.*did not match`, k),
 	}
 }
