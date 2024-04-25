@@ -20,8 +20,7 @@ COPY --from=builder /src/app/bin/app .
 COPY --from=builder /src/app/bin/db .
 
 # Expose Tor's SOCKS proxy port
-EXPOSE 9050
-# EXPOSE 3000
+EXPOSE 3000 9050
 
 # Run Tor and then your application
 CMD tor && /bin/app
