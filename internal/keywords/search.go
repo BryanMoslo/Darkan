@@ -54,12 +54,7 @@ func (keyword Instance) Search(service *service) {
 
 	c.OnHTML("body", func(e *colly.HTMLElement) {
 		content, _ := e.DOM.Html()
-<<<<<<< Updated upstream
-
-		if keyword.isContained(e) {
-=======
 		if keyword.isContained(sanitizeHTML(content)) {
->>>>>>> Stashed changes
 			source := e.Request.URL.String()
 			slog.Info(fmt.Sprintf("keyword '%s' was found in source: '%s'", keyword.Value, source))
 
