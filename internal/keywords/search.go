@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -15,6 +16,8 @@ import (
 	"github.com/cretz/bine/tor"
 	"github.com/gocolly/colly/v2"
 	"github.com/leapkit/core/envor"
+	"github.com/microcosm-cc/bluemonday"
+	"golang.org/x/net/html"
 )
 
 // search looks for the specified keyword in the Dark Web.
@@ -50,9 +53,10 @@ func (keyword Instance) Search(service *service) {
 
 	c.OnHTML("body", func(e *colly.HTMLElement) {
 		content, _ := e.DOM.Html()
+		source := e.Request.URL.String()
 
-		if keyword.isContained(e) {
-			source := e.Request.URL.String()
+		content = sanitizeHTML(content)
+		if keyword.isContained(content) {
 			slog.Info(fmt.Sprintf("keyword '%s' was found in source: '%s'", keyword.Value, source))
 
 			match := Match{
@@ -72,7 +76,7 @@ func (keyword Instance) Search(service *service) {
 				slog.Error(fmt.Sprintf("failed to create a match for keyword '%s' in source: %s, error: %s", keyword.Value, source, err.Error()))
 			}
 		} else {
-			slog.Info(fmt.Sprintf("keyword '%s' was not found. \n", keyword.Value))
+			slog.Info(fmt.Sprintf("keyword '%s' was not found in source %s. \n", keyword.Value, source))
 
 			// TODO:
 			// Storing some info about the research we've done (?)
@@ -140,21 +144,83 @@ func (keyword Instance) performCallback(match Match) {
 }
 
 // isContained returns true when the HTML page contains the keyword
-func (keyword Instance) isContained(e *colly.HTMLElement) bool {
-	htmlContent := strings.ToLower(e.Text)
+func (keyword Instance) isContained(content string) bool {
 	k := strings.ToLower(keyword.Value)
 
-	list := []string{
-		fmt.Sprintf("couldn’t find any results for “%s”", k),
-		fmt.Sprintf("there are no results for %s", k),
-		fmt.Sprintf("no results for %s", k),
+	genericEmptyResultMessages := []string{
+		"nothing found",
+		"no results",
 	}
 
-	for _, item := range list {
-		if strings.Contains(htmlContent, item) {
+	for _, message := range genericEmptyResultMessages {
+		if strings.Contains(content, message) {
 			return false
 		}
 	}
 
-	return strings.Contains(htmlContent, k)
+	ignoreHTMLElements := ignoredTextElements(k)
+	ignoreCoincidences := 0
+
+	for _, element := range ignoreHTMLElements {
+		re := regexp.MustCompile(element)
+		spot := "[ignore-coincidence]"
+		ignoreContent := re.ReplaceAllString(content, spot)
+		ignoreCoincidences += strings.Count(ignoreContent, spot)
+	}
+
+	numberCoincidences := strings.Count(content, k)
+	containsRealResult := numberCoincidences > ignoreCoincidences
+	return containsRealResult
+}
+
+// sanitizeHTML cleans the html content so it's removed unneeded tags and the escape code \n.
+func sanitizeHTML(contentHTML string) string {
+	htmlContent := strings.ToLower(contentHTML)
+
+	p := bluemonday.UGCPolicy()
+	cleanedHTML := p.Sanitize(htmlContent)
+
+	cleanedHTML = strings.ReplaceAll(cleanedHTML, "\n", "")
+	doc, err := html.Parse(strings.NewReader(cleanedHTML))
+
+	if err != nil {
+		slog.Error(fmt.Sprintf("sanitizeHTML parsing error: %s", err.Error()))
+		return ""
+	}
+
+	removeScript(doc)
+
+	buf := bytes.NewBuffer([]byte{})
+	if err := html.Render(buf, doc); err != nil {
+		slog.Error(fmt.Sprintf("sanitizeHTML render error: %s", err.Error()))
+		return ""
+	}
+
+	return buf.String()
+
+}
+
+// removeScript removes the script tags content in an HTML node.
+func removeScript(n *html.Node) {
+	if n.Type == html.ElementNode && n.Data == "script" {
+		n.Parent.RemoveChild(n)
+		return // script tag is gone...
+	}
+
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		removeScript(c)
+	}
+}
+
+func ignoredTextElements(k string) []string {
+	return []string{
+		fmt.Sprintf(`<input[^>]*\svalue="%s"[^>]*>`, k),
+		fmt.Sprintf(`<nav[^>]*>.*%s.*<\/nav>`, k),
+		`search results for\s*“([^”]*)”`,
+		fmt.Sprintf(`results for:.*%s`, k),
+		fmt.Sprintf(`results for\s.*%s`, k),
+		fmt.Sprintf(`result for\s.*%s`, k),
+		fmt.Sprintf(`result for.*%s`, k),
+		fmt.Sprintf(`%s.*did not match`, k),
+	}
 }
