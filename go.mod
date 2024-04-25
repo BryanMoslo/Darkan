@@ -9,6 +9,7 @@ require (
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/leapkit/core v1.2.13-0.20240226205002-76fa67bc6c43
 	github.com/lib/pq v1.10.9
+	github.com/microcosm-cc/bluemonday v1.0.26
 )
 
 require (
@@ -17,10 +18,12 @@ require (
 	github.com/antchfx/htmlquery v1.2.3 // indirect
 	github.com/antchfx/xmlquery v1.2.4 // indirect
 	github.com/antchfx/xpath v1.1.8 // indirect
+	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.4.2 // indirect
+	github.com/gorilla/css v1.0.1 // indirect
 	github.com/kennygrant/sanitize v1.2.4 // indirect
 	github.com/mattn/go-sqlite3 v1.14.19 // indirect
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
