@@ -54,8 +54,10 @@ func (keyword Instance) Search(service *service) {
 
 	c.OnHTML("body", func(e *colly.HTMLElement) {
 		content, _ := e.DOM.Html()
-		if keyword.isContained(sanitizeHTML(content)) {
-			source := e.Request.URL.String()
+		source := e.Request.URL.String()
+
+		content = sanitizeHTML(content)
+		if keyword.isContained(content) {
 			slog.Info(fmt.Sprintf("keyword '%s' was found in source: '%s'", keyword.Value, source))
 
 			match := Match{
@@ -75,7 +77,7 @@ func (keyword Instance) Search(service *service) {
 				slog.Error(fmt.Sprintf("failed to create a match for keyword '%s' in source: %s, error: %s", keyword.Value, source, err.Error()))
 			}
 		} else {
-			slog.Info(fmt.Sprintf("keyword '%s' was not found. \n", keyword.Value))
+			slog.Info(fmt.Sprintf("keyword '%s' was not found in source %s. \n", keyword.Value, source))
 
 			// TODO:
 			// Storing some info about the research we've done (?)
@@ -153,7 +155,6 @@ func (keyword Instance) isContained(content string) bool {
 
 	for _, message := range genericEmptyResultMessages {
 		if strings.Contains(content, message) {
-			fmt.Println("------->", false)
 			return false
 		}
 	}
@@ -165,6 +166,8 @@ func (keyword Instance) isContained(content string) bool {
 		fmt.Sprintf(`results for:.*%s`, k),
 		fmt.Sprintf(`results for\s.*%s`, k),
 		fmt.Sprintf(`result for\s.*%s`, k),
+		fmt.Sprintf(`result for.*%s`, k),
+		fmt.Sprintf(`%s.*did not match`, k),
 	}
 
 	ignoreCoincidences := 0
@@ -177,13 +180,10 @@ func (keyword Instance) isContained(content string) bool {
 
 	numberCoincidences := strings.Count(content, k)
 	containsRealResult := numberCoincidences > ignoreCoincidences
-	// fmt.Println("------->", numberCoincidences)
-	// fmt.Println("------->", ignoreCoincidences)
-	// fmt.Println("------->", containsRealResult)
 	return containsRealResult
 }
 
-// sanitizeHTML cleans the html content so it's removed
+// sanitizeHTML cleans the html content so it's removed unneeded tags and the escape code \n.
 func sanitizeHTML(contentHTML string) string {
 	htmlContent := strings.ToLower(contentHTML)
 
