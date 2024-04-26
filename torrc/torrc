@@ -4,6 +4,4 @@ ControlPort 9051
 CookieAuthentication 1
 DisableNetwork 1
 ExitPolicy reject *:*
-
-## Entry policies to allow/deny SOCKS requests based on IP address.
-SocksPolicy accept *
+SocksPolicy accept 127.0.0.1:9050
