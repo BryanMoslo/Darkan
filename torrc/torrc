@@ -1,33 +1,9 @@
-# This is a sample Tor configuration file
-# For more information on Tor configuration options, see: https://www.torproject.org/docs/tor-manual.html.en
+ClientOnly 1
+SocksPort 0.0.0.0:9050
+ControlPort 9051
+CookieAuthentication 1
+DisableNetwork 1
+ExitPolicy reject *:*
 
-# Run Tor as a client
-# ClientOnly 1
-
-# Log file configuration
-# Log notice file /var/log/tor/notices.log
-# Log info file /var/log/tor/info.log
-# Log debug file /var/log/tor/debug.log
-
-# SOCKS proxy configuration
-SocksPort 127.0.0.1:9050 
-# IPv6Traffic PreferIPv6 KeepAliveIsolateSOCKSAuth
-
-# Allow connections from other containers
-# SocksListenAddress 127.0.0.1
-
-# Control Port configuration
-# ControlPort 9051
-# CookieAuthentication 1
-# CookieAuthFile /var/lib/tor/control_auth_cookie
-
-# Disable directory services
-# DisableNetwork 1
-
-# Exit policies
-# ExitPolicy reject *:*
-
-# Configure bridge or relay settings if needed
-# BridgeRelay 1
-# ORPort 443
-# Bridge "1.2.3.4:443 ID_HERE"
+## Entry policies to allow/deny SOCKS requests based on IP address.
+SocksPolicy accept *
