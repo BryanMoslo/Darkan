@@ -4,6 +4,7 @@ RUN apk --update add build-base
 WORKDIR /src/app
 ADD go.mod .
 RUN go mod download
+RUN mkdir -p tor
 
 ADD . .
 RUN go build -o bin/db ./cmd/db
