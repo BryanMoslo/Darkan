@@ -41,6 +41,7 @@ ENV PATH=$PATH:/usr/bin/tor
 # # # Copy the built binaries from the builder stage
 COPY --from=builder /bin/db /goapp/db
 COPY --from=builder /bin/app /goapp/app
+COPY torrc/torrc "/etc/tor/torrc"
 
 # # # Expose the port used by your Go application
 # # EXPOSE 8080
