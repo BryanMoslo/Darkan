@@ -26,7 +26,9 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	)
 	errors := validatior.Validate()
 	if len(errors) > 0 {
-		json.NewEncoder(w).Encode(response.ErrorResponse(http.StatusBadRequest, errors...))
+		json.NewEncoder(w).Encode(response.ErrorResponse(http.StatusBadRequest, "invalid data").WithData(map[string][]string{
+			"errors": errors,
+		}))
 		return
 	}
 
