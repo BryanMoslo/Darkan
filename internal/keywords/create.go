@@ -31,9 +31,6 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Q: Should we trigger a bg search here? (still thinking on it)
-	go keyword.Search(keywordService)
-
 	response := response.SuccessResponse(http.StatusCreated, "keyword registered successfully").WithData(map[string]string{
 		"keyword":      keyword.Value,
 		"callback_url": keyword.CallbackURL,
