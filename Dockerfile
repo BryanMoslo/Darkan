@@ -48,3 +48,4 @@ COPY torrc/torrc "/etc/tor/torrc"
 
 # # # Command to start Tor and then your application
 CMD ["/usr/bin/tor", "-f", "/etc/tor/torrc"] && /goapp/app
+RUN cat /etc/tor/torrc
