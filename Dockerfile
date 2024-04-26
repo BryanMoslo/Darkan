@@ -36,6 +36,8 @@ WORKDIR /goapp
 
 # # Install necessary packages
 RUN apk add --no-cache tzdata ca-certificates tor
+ENV PATH=$PATH:/usr/bin/tor
+
 # # # Copy the built binaries from the builder stage
 COPY --from=builder /bin/db /goapp/db
 COPY --from=builder /bin/app /goapp/app
