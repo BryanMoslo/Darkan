@@ -4,7 +4,6 @@ RUN apk --update add build-base
 WORKDIR /src/app
 ADD go.mod .
 RUN go mod download
-RUN mkdir -p tor
 
 ADD . .
 RUN go build -o bin/db ./cmd/db
@@ -17,6 +16,7 @@ RUN apk add --no-cache tzdata ca-certificates
 # tor
 
 WORKDIR /bin/
+RUN mkdir -p tor
 
 COPY --from=builder /src/app/bin/app .
 COPY --from=builder /src/app/bin/db .
