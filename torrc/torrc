@@ -1,3 +1,7 @@
 ClientOnly 1
+SocksPort 0.0.0.0:9050
 ControlPort 9051
-SocksPort 0.0.0.0:9050 #
+CookieAuthentication 1
+DisableNetwork 1
+ExitPolicy reject *:*
+SocksPolicy accept 127.0.0.1:9050 #
