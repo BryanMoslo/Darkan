@@ -1,9 +1,9 @@
 package keywords
 
 import (
-	"bytes"
 	"context"
 	"fmt"
+	"jaytaylor.com/html2text"
 	"log/slog"
 	"net/url"
 	"regexp"
@@ -15,7 +15,6 @@ import (
 	"github.com/gocolly/colly/v2"
 	"github.com/leapkit/core/envor"
 	"github.com/microcosm-cc/bluemonday"
-	"golang.org/x/net/html"
 )
 
 // search looks for the specified keyword in the Dark Web.
@@ -54,6 +53,8 @@ func (keyword Keyword) Search(service *service) {
 		source := e.Request.URL.String()
 
 		content = sanitizeHTML(content)
+		content = convertContentToText(content)
+		content = highlightKeyword(content, keyword.Value)
 		if keyword.isContained(content) {
 			slog.Info(fmt.Sprintf("keyword '%s' was found in source: '%s'", keyword.Value, source))
 
@@ -119,7 +120,6 @@ func (keyword Keyword) Search(service *service) {
 }
 
 // isContained returns true when the HTML page contains the keyword
-
 func (keyword Keyword) isContained(content string) bool {
 	k := strings.ToLower(keyword.Value)
 
@@ -149,43 +149,38 @@ func (keyword Keyword) isContained(content string) bool {
 	return containsRealResult
 }
 
-// sanitizeHTML cleans the html content so it's removed unneeded tags and the escape code \n.
+// sanitizeHTML cleans the html content so it's removed unneeded tags and the escape code.
 func sanitizeHTML(contentHTML string) string {
 	htmlContent := strings.ToLower(contentHTML)
 
 	p := bluemonday.UGCPolicy()
+	p.SkipElementsContent("script")
 	cleanedHTML := p.Sanitize(htmlContent)
 
-	cleanedHTML = strings.ReplaceAll(cleanedHTML, "\n", "")
-	doc, err := html.Parse(strings.NewReader(cleanedHTML))
-
-	if err != nil {
-		slog.Error(fmt.Sprintf("sanitizeHTML parsing error: %s", err.Error()))
-		return ""
-	}
-
-	removeScript(doc)
-
-	buf := bytes.NewBuffer([]byte{})
-	if err := html.Render(buf, doc); err != nil {
-		slog.Error(fmt.Sprintf("sanitizeHTML render error: %s", err.Error()))
-		return ""
-	}
-
-	return buf.String()
-
+	return cleanedHTML
 }
 
-// removeScript removes the script tags content in an HTML node.
-func removeScript(n *html.Node) {
-	if n.Type == html.ElementNode && n.Data == "script" {
-		n.Parent.RemoveChild(n)
-		return // script tag is gone...
+// convertContentToText converts the HTML to text.
+func convertContentToText(content string) string {
+	text, err := html2text.FromString(content, html2text.Options{OmitLinks: true, TextOnly: true})
+	if err != nil {
+		return content
 	}
 
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		removeScript(c)
-	}
+	content = strings.ReplaceAll(text, "\n", " ")
+
+	return content
+}
+
+// highlightKeyword applies some styles to highlight the found keyword.
+func highlightKeyword(content, keyword string) string {
+	content = strings.ToLower(content)
+	keyword = strings.ToLower(keyword)
+
+	content = strings.ReplaceAll(content, keyword, fmt.Sprintf(`<span class=f0_5s560nd>%s</span>`, keyword))
+	styles := "<div><style>.f0_5s560nd {background-color:#ff8c00b3;font-weight:bold;font-size:16px;}</style>%s</div>"
+
+	return fmt.Sprintf(styles, content)
 }
 
 func ignoredTextElements(k string) []string {
