@@ -12,7 +12,8 @@ RUN go run ./cmd/build
 FROM alpine
 
 # Install necessary packages
-RUN apk add --no-cache tzdata ca-certificates tor
+RUN apk add --no-cache tzdata ca-certificates 
+# tor
 
 WORKDIR /bin/
 
@@ -20,7 +21,9 @@ COPY --from=builder /src/app/bin/app .
 COPY --from=builder /src/app/bin/db .
 
 # Expose Tor's SOCKS proxy port
-EXPOSE 3000 9050
+# EXPOSE 3000 
+# 9050
 
 # Run Tor and then your application
-CMD tor && /bin/app
+# tor &&
+CMD /bin/app
