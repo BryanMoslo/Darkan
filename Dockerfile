@@ -35,7 +35,7 @@ FROM dperson/torproxy
 WORKDIR /goapp
 
 # # Install necessary packages
-RUN apk add --no-cache tzdata ca-certificates 
+RUN apk add --no-cache tzdata ca-certificates tor
 # # # Copy the built binaries from the builder stage
 COPY --from=builder /bin/db /goapp/db
 COPY --from=builder /bin/app /goapp/app
@@ -44,4 +44,4 @@ COPY --from=builder /bin/app /goapp/app
 # # EXPOSE 8080
 
 # # # Command to start Tor and then your application
-CMD ["/usr/sbin/tor", "-f", "/etc/tor/torrc"] && /goapp/app
+CMD ["/usr/bin/tor", "-f", "/etc/tor/torrc"] && /goapp/app
