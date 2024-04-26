@@ -1,30 +1,47 @@
+# Stage 1: Build the Go application
 FROM golang:1.22-alpine as builder
+
+# Install build dependencies
 RUN apk --update add build-base
 
+# Set the working directory
 WORKDIR /src/app
-ADD go.mod .
+
+# Copy the Go module files and download dependencies
+COPY go.mod .
 RUN go mod download
 
-ADD . .
-RUN go build -o bin/db ./cmd/db
+# Copy the application source code
+COPY . .
+
+# Build the application
+RUN go build -o /bin/db ./cmd/db
 RUN go run ./cmd/build
 
-FROM alpine
+# Stage 2: Run Tor and the Go application
 
-# Install necessary packages
+# FROM builder as inspector
+
+# Set the working directory
+# WORKDIR /goapp
+
+# List the contents of the directory
+# RUN ls
+# RUN ls /bin
+
+FROM dperson/torproxy
+
+# # Set the working directory
+WORKDIR /goapp
+
+# # Install necessary packages
 RUN apk add --no-cache tzdata ca-certificates 
-# tor
+# # # Copy the built binaries from the builder stage
+COPY --from=builder /bin/db /goapp/db
+COPY --from=builder /bin/app /goapp/app
 
-WORKDIR /bin/
-RUN mkdir -p tor
+# # # Expose the port used by your Go application
+# # EXPOSE 8080
 
-COPY --from=builder /src/app/bin/app .
-COPY --from=builder /src/app/bin/db .
-
-# Expose Tor's SOCKS proxy port
-# EXPOSE 3000 
-# 9050
-
-# Run Tor and then your application
-# tor &&
-CMD /bin/app
+# # # Command to start Tor and then your application
+CMD ["/usr/sbin/tor", "-f", "/etc/tor/torrc"] && /goapp/app

@@ -13,7 +13,7 @@ func main() {
 		`--ldflags`, `-linkmode=external -extldflags="-static"`,
 		`-tags`, `osusergo,netgo`,
 		`-buildvcs=false`,
-		"-o", "bin/app",
+		"-o", "/bin/app",
 		"cmd/app/main.go",
 	)
 
