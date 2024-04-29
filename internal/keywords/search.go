@@ -3,13 +3,14 @@ package keywords
 import (
 	"context"
 	"fmt"
-	"jaytaylor.com/html2text"
 	"log/slog"
 	"net/url"
 	"regexp"
 	"strings"
 	"sync"
 	"time"
+
+	"jaytaylor.com/html2text"
 
 	"github.com/cretz/bine/tor"
 	"github.com/gocolly/colly/v2"

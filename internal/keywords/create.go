@@ -1,6 +1,8 @@
 package keywords
 
 import (
+	validation "darkan/internal/validation"
+
 	"darkan/internal/response"
 	"encoding/json"
 	"fmt"
@@ -13,6 +15,20 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&keyword)
 	if err != nil {
 		json.NewEncoder(w).Encode(response.ErrorResponse(http.StatusBadRequest, err.Error()))
+		return
+	}
+
+	// Validate incoming data.
+	validatior := validation.Validator{}
+	validatior.Add(
+		keyword.ValidateValue(),
+		keyword.ValidateCallback(),
+	)
+	errors := validatior.Validate()
+	if len(errors) > 0 {
+		json.NewEncoder(w).Encode(response.ErrorResponse(http.StatusBadRequest, "invalid data").WithData(map[string][]string{
+			"errors": errors,
+		}))
 		return
 	}
 
