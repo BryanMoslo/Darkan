@@ -47,5 +47,6 @@ COPY torrc/torrc "/etc/tor/torrc"
 # # EXPOSE 8080
 
 # # # Command to start Tor and then your application
-CMD ["/usr/bin/tor", "-f", "/etc/tor/torrc"] && /goapp/app
-RUN cat /etc/tor/torrc
+# CMD ["/usr/bin/tor", "-f", "/etc/tor/torrc"] && /goapp/app
+CMD /goapp/app
+# RUN cat /etc/tor/torrc
