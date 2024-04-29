@@ -35,7 +35,7 @@ func (keyword Keyword) Search(service *service) {
 		colly.Async(true),
 	)
 
-	torProxy := envor.Get("TOR_PROXY", "socks5://128.0.0.1:9050")
+	torProxy := envor.Get("TOR_PROXY", "socks5://127.0.0.1:9050")
 	if err := c.SetProxy(torProxy); err != nil {
 		slog.Error(fmt.Sprintf("error setting up a proxy: %s", err.Error()))
 		return
